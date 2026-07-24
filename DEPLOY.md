@@ -66,6 +66,18 @@ APP_SP_CLIENT_ID=$(databricks apps get customer360 --profile $P -o json | jq -r 
 - **OBO preview:** Settings → Apps → *User authorization (preview)* = ON.
   Without it, `user_api_scopes` silently drop and `X-Forwarded-Access-Token`
   is never injected.
+
+  > **Confirmed blocker on `e2-demo-field-eng` (2026-07-24):** the deployed app
+  > has `user_api_scopes: [sql, dashboards.genie]` configured, but
+  > `effective_user_api_scopes` shows only `[iam.access-control:read,
+  > iam.current-user:read]` — the preview toggle is OFF and this account
+  > (`grupo_1_admin`, not the workspace `admins` group) can't flip it
+  > (`workspace-conf` → Forbidden). Effect: **Lakebase reads via the app SP work
+  > (customer list + detail render live), and SP-based warehouse queries work
+  > (`/api/segments` → 200 after granting the SP `USE CATALOG mozuca`), but the
+  > OBO-based metrics + Genie endpoints return 401 "OAuth token does not have
+  > required scopes: sql"** until a workspace admin enables the toggle. No code
+  > change fixes this — it is purely the workspace setting.
 - **Dashboard embed allowlist:** Settings → Security → External Access →
   *Embed Dashboard* → add the app host
   (`customer360-<id>.aws.databricksapps.com`), else the iframe is blocked by
