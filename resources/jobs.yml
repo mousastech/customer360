@@ -1,0 +1,20 @@
+resources:
+  jobs:
+    forward_etl:
+      name: "customer360-forward-etl"
+      description: "Promote Lakebase staging (notes + segment overrides) into Delta gold (Pattern A)."
+      tasks:
+        - task_key: merge_staging_to_gold
+          notebook_task:
+            notebook_path: ../lakebase/forward_etl/pattern_a_psycopg2/forward_etl.py
+            base_parameters:
+              catalog: ${var.catalog}
+              pg_instance_name: ${var.lakebase_instance}
+              pg_host: ${var.pg_host}
+              pg_database: ${var.lakebase_database}
+          # Serverless compute — no cluster to manage; psycopg is pip-installed on the fly.
+          libraries:
+            - pypi:
+                package: "psycopg[binary]"
+      queue:
+        enabled: true

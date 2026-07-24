@@ -1,0 +1,52 @@
+bundle:
+  name: customer360
+
+include:
+  - resources/*.yml
+
+variables:
+  warehouse_id:
+    description: Serverless SQL warehouse ID
+    default: "8baced1ff014912d"
+  lakebase_instance:
+    description: Lakebase (Provisioned) instance name
+    default: "capstone-pg"
+  lakebase_database:
+    description: Lakebase logical database
+    default: "capstone_db"
+  dashboard_id:
+    description: AI/BI dashboard ID to embed
+    default: "01f187aa3ef218caaf91091d67fdb124"
+  genie_space_id:
+    description: Genie space ID
+    default: "01f187ad0b031f7997246b22d4337fff"
+  catalog:
+    description: Delta gold catalog
+    default: "mozuca"
+  pg_uc_catalog:
+    description: UC catalog registered over Lakebase
+    default: "capstone_lakebase"
+  pg_host:
+    description: Lakebase read-write endpoint host
+    default: "ep-late-boat-d1i0mbwp.database.us-west-2.cloud.databricks.com"
+  git_repo_url:
+    description: GitHub repo URL for the git-source app
+    default: "https://github.com/mousastech/customer360"
+  git_branch:
+    description: Git branch the app deploys from
+    default: "main"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://e2-demo-field-eng.cloud.databricks.com
+      root_path: /Workspace/Users/moises.santos@databricks.com/.bundle/${bundle.name}/${bundle.target}
+    run_as:
+      user_name: moises.santos@databricks.com

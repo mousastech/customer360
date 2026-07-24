@@ -1,0 +1,56 @@
+# Declarative synced-table specs — the DABs equivalent of T1's psycopg/CLI creation,
+# so the reverse-ETL topology lives in the bundle and doesn't drift from manual setup.
+#
+# NOTE: These three synced tables were bootstrapped in T1 via
+# `databricks database create-synced-database-table`. They are declared here as the
+# bundle's source of truth. If you deploy into a fresh instance, `bundle deploy`
+# creates them; against the existing instance they already match this spec.
+#
+# Sync-mode rationale (see submission reflection):
+#   customers / transactions  -> CONTINUOUS (app must reflect upstream gold within seconds)
+#   products                  -> TRIGGERED  (slow-changing 200-row catalog; hourly is plenty
+#                                             and avoids a always-on pipeline for near-static data)
+
+resources:
+  synced_database_tables:
+    customers_synced:
+      name: ${var.pg_uc_catalog}.public.customers_synced
+      database_instance_name: ${var.lakebase_instance}
+      logical_database_name: ${var.lakebase_database}
+      spec:
+        source_table_full_name: ${var.catalog}.gold.customers
+        primary_key_columns:
+          - customer_id
+        scheduling_policy: CONTINUOUS
+        create_database_objects_if_missing: true
+        new_pipeline_spec:
+          storage_catalog: ${var.catalog}
+          storage_schema: gold
+
+    transactions_synced:
+      name: ${var.pg_uc_catalog}.public.transactions_synced
+      database_instance_name: ${var.lakebase_instance}
+      logical_database_name: ${var.lakebase_database}
+      spec:
+        source_table_full_name: ${var.catalog}.gold.transactions
+        primary_key_columns:
+          - transaction_id
+        scheduling_policy: CONTINUOUS
+        create_database_objects_if_missing: true
+        new_pipeline_spec:
+          storage_catalog: ${var.catalog}
+          storage_schema: gold
+
+    products_synced:
+      name: ${var.pg_uc_catalog}.public.products_synced
+      database_instance_name: ${var.lakebase_instance}
+      logical_database_name: ${var.lakebase_database}
+      spec:
+        source_table_full_name: ${var.catalog}.gold.products
+        primary_key_columns:
+          - product_id
+        scheduling_policy: TRIGGERED
+        create_database_objects_if_missing: true
+        new_pipeline_spec:
+          storage_catalog: ${var.catalog}
+          storage_schema: gold

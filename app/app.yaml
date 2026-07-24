@@ -1,0 +1,44 @@
+command:
+  - "uvicorn"
+  - "backend.main:app"
+  - "--host"
+  - "0.0.0.0"
+  - "--port"
+  - "8000"
+
+env:
+  # --- Databricks / warehouse / analytics ---
+  - name: CAPSTONE_CATALOG
+    value: "mozuca"
+  - name: CAPSTONE_SCHEMA
+    value: "gold"
+  - name: WAREHOUSE_ID
+    value: "8baced1ff014912d"
+  - name: DASHBOARD_ID
+    value: "01f187aa3ef218caaf91091d67fdb124"
+  - name: GENIE_SPACE_ID
+    value: "01f187ad0b031f7997246b22d4337fff"
+
+  # --- Lakebase (Provisioned instance capstone-pg / capstone_db) ---
+  # PGHOST + PGUSER are injected by the attached `database` app resource at runtime.
+  - name: PGDATABASE
+    value: "capstone_db"
+  - name: PGPORT
+    value: "5432"
+  - name: PGSSLMODE
+    value: "require"
+  - name: PG_INSTANCE_NAME
+    value: "capstone-pg"
+  - name: PG_UC_CATALOG
+    value: "capstone_lakebase"
+
+  # --- Forward-ETL job (bundle-injected; resource name declared in resources/app.yml) ---
+  - name: FORWARD_ETL_JOB_ID
+    valueFrom: "forward_etl_job"
+
+# OBO scopes — ONLY sql + dashboards.genie are allowed by the Apps API.
+# The platform auto-adds iam.current-user:read and iam.access-control:read.
+user_authorization:
+  scopes:
+    - sql
+    - dashboards.genie

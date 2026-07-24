@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.databricks/
+.DS_Store
+node_modules/
+*.log
+
+# NOTE: app/backend/static/ (the built React bundle) IS committed on purpose —
+# the Apps runtime command is a plain `uvicorn backend.main:app` with no build
+# step, so the compiled frontend must ship in the repo (see T8).
