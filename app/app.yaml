@@ -20,7 +20,14 @@ env:
     value: "01f187ad0b031f7997246b22d4337fff"
 
   # --- Lakebase (Provisioned instance capstone-pg / capstone_db) ---
-  # PGHOST + PGUSER are injected by the attached `database` app resource at runtime.
+  # Set statically because the `database` app resource can't be bound on this
+  # workspace (deploying user lacks MANAGE grant on the instance). The app SP
+  # mints Lakebase credentials via generate_database_credential + UC claims;
+  # PGUSER is the app SP client_id.
+  - name: PGHOST
+    value: "ep-late-boat-d1i0mbwp.database.us-west-2.cloud.databricks.com"
+  - name: PGUSER
+    value: "2148e212-5a16-4e92-b056-dcaca07c956d"
   - name: PGDATABASE
     value: "capstone_db"
   - name: PGPORT

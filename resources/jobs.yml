@@ -12,9 +12,13 @@ resources:
               pg_instance_name: ${var.lakebase_instance}
               pg_host: ${var.pg_host}
               pg_database: ${var.lakebase_database}
-          # Serverless compute — no cluster to manage; psycopg is pip-installed on the fly.
-          libraries:
-            - pypi:
-                package: "psycopg[binary]"
+          # Serverless compute — psycopg declared via the task environment.
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            client: "3"
+            dependencies:
+              - "psycopg[binary]"
       queue:
         enabled: true

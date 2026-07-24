@@ -20,11 +20,10 @@ resources:
           sql_warehouse:
             id: ${var.warehouse_id}
             permission: CAN_USE
-        - name: lakebase
-          database:
-            instance_name: ${var.lakebase_instance}
-            database_name: ${var.lakebase_database}
-            permission: CAN_CONNECT_AND_CREATE
+        # NOTE: the Lakebase `database` resource is attached post-deploy via the
+        # `databricks apps update` CLI (see DEPLOY.md) — binding it inside the
+        # bundle requires MANAGE on the instance and 403s for the deploying user
+        # on this workspace. Once attached, PGHOST/PGUSER are injected at runtime.
         - name: genie_space
           genie_space:
             name: genie_space
