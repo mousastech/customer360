@@ -17,6 +17,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.core import Config
 from fastapi import HTTPException, Request
 
 from .config import IS_DATABRICKS_APP, get_settings
@@ -43,7 +44,10 @@ def obo_client(request: Request) -> WorkspaceClient:
                 "toggle is on and the user has authorized the app's scopes."
             ),
         )
-    return WorkspaceClient(host=get_settings().host, token=token)
+    # Force PAT auth and ignore ambient SP env creds (DATABRICKS_CLIENT_ID/SECRET),
+    # else the SDK errors "more than one authorization method configured: oauth and pat".
+    cfg = Config(host=get_settings().host, token=token, auth_type="pat")
+    return WorkspaceClient(config=cfg)
 
 
 def caller_email(request: Request) -> str:
