@@ -11,6 +11,14 @@
 
 # COMMAND ----------
 
+# The serverless runtime ships an older databricks-sdk without the DatabaseAPI
+# (w.database). Install a recent SDK + psycopg, then restart Python so the new
+# versions are the ones imported below.
+%pip install --quiet "databricks-sdk>=0.40" "psycopg[binary]"
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
 import json
 
 import psycopg
@@ -33,18 +41,28 @@ PG_DATABASE = dbutils.widgets.get("pg_database")
 
 # COMMAND ----------
 
-# Connect to Lakebase as the running identity (the job's SP). The credential is
-# minted through the same generate_database_credential path the app uses.
+# Connect to Lakebase as the running identity (the job's run_as). The credential is
+# minted through the same generate_database_credential path the app uses; fall back
+# to the REST API if the installed SDK still lacks the DatabaseAPI.
 w = WorkspaceClient()
-cred = w.database.generate_database_credential(instance_names=[PG_INSTANCE])
 me = w.current_user.me().user_name
+
+if hasattr(w, "database"):
+    token = w.database.generate_database_credential(instance_names=[PG_INSTANCE]).token
+else:
+    resp = w.api_client.do(
+        "POST",
+        "/api/2.0/database/credentials",
+        body={"instance_names": [PG_INSTANCE], "request_id": "forward-etl"},
+    )
+    token = resp["token"]
 
 conn = psycopg.connect(
     host=PG_HOST,
     port=5432,
     dbname=PG_DATABASE,
     user=me,
-    password=cred.token,
+    password=token,
     sslmode="require",
     row_factory=dict_row,
 )

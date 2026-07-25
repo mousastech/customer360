@@ -20,5 +20,9 @@ resources:
             client: "3"
             dependencies:
               - "psycopg[binary]"
+              # The serverless runtime ships an older databricks-sdk without the
+              # DatabaseAPI (w.database). Pin a recent SDK so generate_database_credential
+              # is available inside the notebook.
+              - "databricks-sdk>=0.40"
       queue:
         enabled: true
